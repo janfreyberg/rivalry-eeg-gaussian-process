@@ -1,10 +1,6 @@
 name: machinelearn
 
 dependencies:
-- numpy=1.11.1=py27_0
-- scipy=0.17.1=np111py27_1
-- matplotlib=1.5.1=np111py27_0
-- python=2.7.12=0
-- unicodecsv=0.14.1=py27_0
+- unicodecsv
 - pip:
   - git+https://github.com/scikit-learn/scikit-learn.git
