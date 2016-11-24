@@ -1,10 +1,9 @@
 ---
 title: "Summary of gaussian process analysis so far"
-output: 
-  ioslides_presentation:
-    # dev: svg
-    widescreen: true
-    smaller: true
+output:
+  slidy_presentation:
+    duration: 45
+    dev: svg
 runtime: shiny
 ---
 
@@ -29,13 +28,13 @@ source('./r-scripts/mung-data.r')
 
 ## Prediction of percept falls during rivalry period
 
-```{r  fig.width=8, fig.height=4, warning=FALSE, eval=TRUE, message=FALSE, tidy=TRUE, dev='png', echo=FALSE, fig.show='hold', fig.align='center'}
+```{r  fig.width=10, fig.height=7, warning=FALSE, eval=TRUE, message=FALSE, tidy=TRUE, dev='png', echo=FALSE, fig.show='hold', fig.align='center'}
 source('./r-scripts/plot-timecourse.r', print.eval = TRUE)
 ```
 
 ## Prediction of the *following* percept rises during mixed period
 
-```{r  fig.width=8, fig.height=4, warning=FALSE, eval=TRUE, message=FALSE, tidy=TRUE, dev='png', echo=FALSE, fig.show='hold', fig.align='center'}
+```{r  fig.width=10, fig.height=7, warning=FALSE, eval=TRUE, message=FALSE, tidy=TRUE, dev='png', echo=FALSE, fig.show='hold', fig.align='center'}
 source('./r-scripts/plot-nextcourse.r', print.eval = TRUE)
 ```
 

@@ -27,7 +27,8 @@ def merge_dicts(*dict_args):
 #
 # You can define who to include include in this analysis run in the next cell.
 # You can also set some of the other parameters that might change from setup
-# to setup:
+# to setup.
+#
 
 
 # <codecell>
@@ -265,7 +266,7 @@ def assign_percentage(y):
                             (np.arange(y.size) >= timepoint)).nonzero()[0][0]
             except:
                 endpoint = y.size
-            following = y[endpoint+1] if endpoint < y.size else 99
+            following = y[endpoint + 1] if endpoint < y.size else 99
         percentages[timepoint] = (float(timepoint - startpoint) /
                                   float(endpoint - startpoint))
         nextpercept[timepoint] = following
@@ -285,7 +286,7 @@ for participant in participants:
     # Train the model, predict percepts:
     (meanprediction, predictiondev, predictionaccuracy,
      predictioncourse, nextcourse) = \
-     trainPredict(participant, makeplot=False)
+        trainPredict(participant, makeplot=False)
 
     # Work out the percept proportions during rivalry
     proportions = compute_proportions(participant)
