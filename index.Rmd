@@ -1,0 +1,41 @@
+---
+title: "Summary of gaussian process analysis so far"
+output: 
+  ioslides_presentation:
+    # dev: svg
+    widescreen: true
+    smaller: true
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+source('./r-scripts/mung-data.r')
+```
+
+## Process so far
+
+* Take data from Jackson
+* Train a Gaussian Process classifier to recognise in the "simulations" when a person was viewing the high or the low frequency
+* Use this classifier to produce probabilistic output: how likely is a person to have seen the high or low frequency, given any two estimates of frequency
+* Then summarise this probabilistic output based on what the person actually saw:
+  + predicted probability of seeing `High` when they reported `High` / `Mixed` / `Low`
+* Then summarise the classifier output based on when in a percept duration it occurred:
+  + predicted probability of seeing `High` during the first or last 10% of them reporting `High` or `Low`
+
+
+## Prediction of percept falls during rivalry period
+
+```{r  fig.width=8, fig.height=4, warning=FALSE, eval=TRUE, message=FALSE, tidy=TRUE, dev='png', echo=FALSE, fig.show='hold', fig.align='center'}
+source('./r-scripts/plot-timecourse.r', print.eval = TRUE)
+```
+
+## Prediction of the *following* percept rises during mixed period
+
+```{r  fig.width=8, fig.height=4, warning=FALSE, eval=TRUE, message=FALSE, tidy=TRUE, dev='png', echo=FALSE, fig.show='hold', fig.align='center'}
+source('./r-scripts/plot-nextcourse.r', print.eval = TRUE)
+```
+
