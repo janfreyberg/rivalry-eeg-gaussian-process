@@ -19,22 +19,58 @@ source('./r-scripts/mung-data.r')
 
 * Take data from Jackson
 * Train a Gaussian Process classifier to recognise in the "simulations" when a person was viewing the high or the low frequency
-* Use this classifier to produce probabilistic output: how likely is a person to have seen the high or low frequency, given any two estimates of frequency
-* Then summarise this probabilistic output based on what the person actually saw:
-  + predicted probability of seeing `High` when they reported `High` / `Mixed` / `Low`
-* Then summarise the classifier output based on when in a percept duration it occurred:
-  + predicted probability of seeing `High` during the first or last 10% of them reporting `High` or `Low`
+* Use this classifier to produce probabilistic output: how likely is a person to have seen the high or low frequency, given any two frequency amplitudes
 
 
-## Prediction of percept falls during rivalry period
+## Checking the model predicts the right thing
+
+* Summarise the probabilistic output based on what the person actually saw:
+    + predicted probability of seeing `High` when they reported
+        - `High`
+        - `Mixed`
+        - `Low`
+
+## Checking the model predicts the right thing
+```{r  fig.width=10, fig.height=7, warning=FALSE, eval=TRUE, message=FALSE, tidy=TRUE, dev='png', echo=FALSE, fig.show='hold', fig.align='center'}
+source('./r-scripts/plot-prob-in-percept.r', print.eval = TRUE)
+```
+
+
+## What can this model tell us about the strength of dominance?
+
+* Summarise the classifier output based on when in a percept duration it occurred:
+    + predicted probability of seeing `High` binned into 10% bins of percept (so first 10%, second 10%, etc)
+    + Do this for dominance periods where they reported `High`, `Mixed`, or `Low`
+    + Also do this for `Mixed` periods
+        - Split mixed periods into whether they were followed by a dominance period of `High` or `Low`
+
+
+## Correct prediction of percept falls at the end of dominant periods
 
 ```{r  fig.width=10, fig.height=7, warning=FALSE, eval=TRUE, message=FALSE, tidy=TRUE, dev='png', echo=FALSE, fig.show='hold', fig.align='center'}
 source('./r-scripts/plot-timecourse.r', print.eval = TRUE)
 ```
 
+## Can it tell us any more about the mixed period?
+
+* Take the prediction of the current percept when the participant actually reports `Mixed`, but split `Mixed` percepts by whether they are followed by a `High` or a `Low` percept
+    + Is the subsequent percept already detectable in the current mixed percept?
+    + How early can we tell what the next percept will be?
+
 ## Prediction of the *following* percept rises during mixed period
 
 ```{r  fig.width=10, fig.height=7, warning=FALSE, eval=TRUE, message=FALSE, tidy=TRUE, dev='png', echo=FALSE, fig.show='hold', fig.align='center'}
 source('./r-scripts/plot-nextcourse.r', print.eval = TRUE)
+```
+
+## Can we do the same for dominant periods?
+* Take the prediction of the current percept when the participant actually reports `High` or `Low`, but split by whether the _next_ percept will be `Mixed`, or the other dominant
+    + Is the subsequent percept already detectable in the current dominant percept?
+    + How early can we tell what the next percept will be?
+
+
+## Can we do the same for dominant periods?
+```{r  fig.width=10, fig.height=7, warning=FALSE, eval=TRUE, message=FALSE, tidy=TRUE, dev='png', echo=FALSE, fig.show='hold', fig.align='center'}
+source('./r-scripts/plot-next-for-dominance.r', print.eval = TRUE)
 ```
 

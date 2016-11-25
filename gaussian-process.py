@@ -89,6 +89,31 @@ def cleandata(data, downsamplefactor=20):
 
 
 # <codecell>
+def trainModel(subjectid):
+    # Load training data from the file matlab generates
+    traindata = np.genfromtxt('csvdata/' + subjectid +
+                              '_sim.csv', delimiter=',',
+                              missing_values=['NaN', 'nan'],
+                              filling_values=None)
+    trainx, trainy = cleandata(traindata, downsamplefactor=20)
+
+    # Train a Gaussian Process
+    anisokern = kernels.RBF()  # default kernel
+    gp = GaussianProcessClassifier(kernel=anisokern)  # Initialize the GPC
+    gp.fit(trainx, trainy)  # train this class on the data
+    trainx = trainy = None  # Discard all training data to preserve memory
+
+    # Load test data
+    testdata = np.genfromtxt('csvdata/' + subjectid +
+                             '_rival.csv', delimiter=',',
+                             missing_values=['NaN', 'nan'],
+                             filling_values=None)
+    testx, testy = cleandata(testdata, downsamplefactor=4)  # clean data
+
+    return gp, testx, testy
+
+
+# <codecell>
 def trainPredict(subjectid, makeplot=False):
     print("testing participant " + subjectid)
     # Load training data from the file matlab generates
@@ -110,7 +135,6 @@ def trainPredict(subjectid, makeplot=False):
                              '_rival.csv', delimiter=',',
                              missing_values=['NaN', 'nan'],
                              filling_values=None)
-
     testx, testy = cleandata(testdata, downsamplefactor=4)  # clean data
 
     testdata = None  # clear from memory
@@ -152,9 +176,20 @@ def trainPredict(subjectid, makeplot=False):
                   for percept in ['highfreq', 'lowfreq']
                   for cutoff in np.linspace(0.1, 1, 10)}
 
+    afterdominant = {'after' + percept + "_" + after + "_" + str(cutoff):
+                     proby[(testy == perceptindices[percept]) &
+                           (percentages < cutoff) &
+                           (percentages > cutoff - 0.1) &
+                           (nextpercept == perceptindices[after]), 1].mean()
+                     for percept, after in [('highfreq', 'mixed'),
+                                            ('highfreq', 'lowfreq'),
+                                            ('lowfreq', 'mixed'),
+                                            ('lowfreq', 'highfreq')]
+                     for cutoff in np.linspace(0.1, 1, 10)}
+
     # Only return the summarised data
     return meanprediction, predictiondev, predictionaccuracy, \
-        predictioncourse, nextcourse
+        predictioncourse, nextcourse, afterdominant
 
 
 # <markdowncell>
@@ -283,9 +318,14 @@ def assign_percentage(y):
 # <codecell>
 allresults = {}
 for participant in participants:
+    # train the model, return the test data and the model
+    # gp, testx, testy = trainModel(participant)
+    # Get the average prediction probability for each percept
+    # meanprediction = predictByPercept(gp, testx, testy)
+
     # Train the model, predict percepts:
     (meanprediction, predictiondev, predictionaccuracy,
-     predictioncourse, nextcourse) = \
+     predictioncourse, nextcourse, afterdominant) = \
         trainPredict(participant, makeplot=False)
 
     # Work out the percept proportions during rivalry
@@ -295,6 +335,7 @@ for participant in participants:
     allresults[participant] = merge_dicts(meanprediction, predictiondev,
                                           predictionaccuracy, proportions,
                                           predictioncourse, nextcourse,
+                                          afterdominant,
                                           {'name': participant})
 
 # Put everything into a pandas dataframe
