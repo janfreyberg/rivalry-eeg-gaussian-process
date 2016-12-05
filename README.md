@@ -1,4 +1,5 @@
 [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org:/repo/janfreyberg/rivalry-eeg-gaussian-process)
+[![Binder](https://img.shields.io/badge/view-shiny--presentation-blue.svg)](http://shiny.janfreyberg.com/rivalry-gaussian-process)
 
 # rivalry-eeg-gaussian-process
 
