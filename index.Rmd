@@ -57,10 +57,10 @@ source('./r-scripts/plot-timecourse.r', print.eval = TRUE)
     + Is the subsequent percept already detectable in the current mixed percept?
     + How early can we tell what the next percept will be?
 
-## Prediction of the *following* percept rises during mixed period
+## Prediction consistent with the *following* percept rises during mixed period
 
 ```{r  fig.width=10, fig.height=7, warning=FALSE, eval=TRUE, message=FALSE, tidy=TRUE, dev='png', echo=FALSE, fig.show='hold', fig.align='center'}
-source('./r-scripts/plot-nextcourse.r', print.eval = TRUE)
+source('./r-scripts/plot-mix-bynext.r', print.eval = TRUE)
 ```
 
 ## Can we do the same for dominant periods?

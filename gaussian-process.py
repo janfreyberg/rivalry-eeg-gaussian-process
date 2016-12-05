@@ -135,11 +135,11 @@ def trainPredict(subjectid, makeplot=False):
                              '_rival.csv', delimiter=',',
                              missing_values=['NaN', 'nan'],
                              filling_values=None)
-    testx, testy = cleandata(testdata, downsamplefactor=4)  # clean data
+    testx, testy = cleandata(testdata, downsamplefactor=6)  # clean data
 
     testdata = None  # clear from memory
     # work out percentage in percept for each data point:
-    percentages, nextpercept = assign_percentage(testy)
+    percentages, nextpercept, previouspercept = assign_percentage(testy)
 
     # get a prediction for all points in the test data:
     predicty = gp.predict(testx)
@@ -149,34 +149,48 @@ def trainPredict(subjectid, makeplot=False):
         summaryplot(participant, testx, testy, predicty, proby, gp)
 
     # Summarise prediction by reported percept
+    cutoff = 0.5
     meanprediction = {'mean' + percept:
-                      proby[testy == value, 1].mean()
+                      proby[((testy == value) &
+                             (percentages < cutoff)), 1].mean()
                       for percept, value in perceptindices.iteritems()}
     predictiondev = {'stdev' + percept:
-                     proby[testy == value, 1].std()
+                     proby[((testy == value) &
+                            (percentages < cutoff)), 1].std()
                      for percept, value in perceptindices.iteritems()}
     predictionaccuracy = {'acc' + percept:
-                          (predicty[testy == value] ==
-                           testy[testy == value]).mean()
+                          (predicty[((testy == value) &
+                                     (percentages < cutoff))] ==
+                           testy[((testy == value) &
+                                  (percentages < cutoff))]).mean()
                           for percept, value in perceptindices.iteritems()}
     # Summarise prediction by percentage in percept
-    predictioncourse = {'timecourse' + percept + str(cutoff):
+    predictioncourse = {'_'.join(['timecourse', percept, str(cutoff)]):
                         proby[(testy == value) &
                               (percentages < cutoff) &
                               (percentages > cutoff - 0.1), 1].mean()
                         for percept, value in perceptindices.iteritems()
                         for cutoff in np.linspace(0.1, 1, 10)}
-
     # Summarise mixed percept time courses by the next percept
-    nextcourse = {'nextcourse' + percept + str(cutoff):
-                  proby[(testy == 0) &
-                        (percentages < cutoff) &
-                        (percentages > cutoff - 0.1) &
-                        (nextpercept == perceptindices[percept]), 1].mean()
-                  for percept in ['highfreq', 'lowfreq']
-                  for cutoff in np.linspace(0.1, 1, 10)}
+    nextcourse = [{}, {}]
+    nextcourse[0] = {'_'.join(['mixnext', percept, str(cutoff)]):
+                     proby[(testy == 0) &
+                           (percentages < cutoff) &
+                           (percentages > cutoff - 0.1) &
+                           (nextpercept == perceptindices[percept]), 1].mean()
+                     for percept in ['highfreq', 'lowfreq']
+                     for cutoff in np.linspace(0.1, 1, 10)}
+    # nextcourse[1] = {"_".join(['mixprvnxt', prv, nxt, str(cutoff)]):
+    #                  proby[(testy == 0) &
+    #                        (percentages < cutoff) &
+    #                        (percentages > cutoff - 0.1) &
+    #                        (nextpercept == perceptindices[nxt]) &
+    #                        (previouspercept == perceptindices[prv]), 1].mean()
+    #                  for nxt in ['highfreq', 'lowfreq']
+    #                  for prv in ['highfreq', 'lowfreq']
+    #                  for cutoff in np.linspace(0.1, 1, 10)}
 
-    afterdominant = {'after' + percept + "_" + after + "_" + str(cutoff):
+    afterdominant = {'_'.join(['domnext', percept, after, str(cutoff)]):
                      proby[(testy == perceptindices[percept]) &
                            (percentages < cutoff) &
                            (percentages > cutoff - 0.1) &
@@ -187,9 +201,26 @@ def trainPredict(subjectid, makeplot=False):
                                             ('lowfreq', 'highfreq')]
                      for cutoff in np.linspace(0.1, 1, 10)}
 
+    corr = {'correlation_' + percept:
+            np.corrcoef(
+                testx[((testy == index) &
+                       (percentages < 0.5)), :].T
+            )[0][1]
+            for percept, index in perceptindices.iteritems()}
+
+    wta = {'_'.join(['winnerindex', percept, str(cutoff)]):
+           np.absolute(proby[(testy == perceptindices[percept]) &
+                             (percentages < cutoff) &
+                             (percentages > cutoff - 0.1), 0] -
+                       proby[(testy == perceptindices[percept]) &
+                             (percentages < cutoff) &
+                             (percentages > cutoff - 0.1), 1]).mean()
+           for percept, value in perceptindices.iteritems()
+           for cutoff in np.linspace(0.1, 1, 10)}
+
     # Only return the summarised data
     return meanprediction, predictiondev, predictionaccuracy, \
-        predictioncourse, nextcourse, afterdominant
+        predictioncourse, nextcourse, afterdominant, corr, wta
 
 
 # <markdowncell>
@@ -289,6 +320,7 @@ def compute_proportions(subjectid):
 def assign_percentage(y):
     percentages = np.zeros_like(y, dtype=float)
     nextpercept = np.zeros_like(y, dtype=float)
+    previouspercept = np.zeros_like(y, dtype=float)
     startpoint = 0
     previous = 99
     for timepoint in range(y.size):
@@ -301,11 +333,13 @@ def assign_percentage(y):
                             (np.arange(y.size) >= timepoint)).nonzero()[0][0]
             except:
                 endpoint = y.size
-            following = y[endpoint + 1] if endpoint < y.size else 99
         percentages[timepoint] = (float(timepoint - startpoint) /
                                   float(endpoint - startpoint))
-        nextpercept[timepoint] = following
-    return percentages, nextpercept
+        nextpercept[timepoint] = \
+            y[endpoint + 1] if endpoint < y.size else 99
+        previouspercept[timepoint] = \
+            y[startpoint - 1] if startpoint > 0 else 99
+    return percentages, nextpercept, previouspercept
 
 
 # <markdowncell>
@@ -325,7 +359,7 @@ for participant in participants:
 
     # Train the model, predict percepts:
     (meanprediction, predictiondev, predictionaccuracy,
-     predictioncourse, nextcourse, afterdominant) = \
+     predictioncourse, nextcourse, afterdominant, corr, wta) = \
         trainPredict(participant, makeplot=False)
 
     # Work out the percept proportions during rivalry
@@ -334,7 +368,8 @@ for participant in participants:
     # Store in dictionary:
     allresults[participant] = merge_dicts(meanprediction, predictiondev,
                                           predictionaccuracy, proportions,
-                                          predictioncourse, nextcourse,
+                                          predictioncourse, corr, wta,
+                                          nextcourse[0],
                                           afterdominant,
                                           {'name': participant})
 

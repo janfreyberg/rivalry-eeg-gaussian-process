@@ -50,6 +50,8 @@ sklearnbkup
 .Rproj.user
 .Rproj
 .RData
+.Rhistory
+
 
 # Ignore the actual data for this branch
 csvdata
